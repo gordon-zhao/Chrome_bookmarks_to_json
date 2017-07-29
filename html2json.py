@@ -86,7 +86,7 @@ def writeJSON(result, path_to_save=None, indent=4,encoding = "utf-8", mode="w+")
         print("JSON saving path not found! Skipping...")
         return 1
     files = codecs.open(path_to_save,encoding=encoding,mode=mode)
-    files.write(json.dumps(result,indent=indent))
+    files.write(json.dumps(result,indent=indent).decode('unicode-escape'))
     files.flush()
     files.close()
     print("JSON file written to path: {}".format(path_to_save))
