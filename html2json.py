@@ -3,8 +3,14 @@ import json
 import sys
 import codecs
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+python3 = False
+
+if sys.version_info[0] == 3:   #Python 3
+    python3 = True
+if not python3:
+    reload(sys)
+    sys.setdefaultencoding("utf-8")
+    input = raw_input
 
 def parseHTML(file_path):
     fo = codecs.open(file_path, encoding='utf-8', mode='r+')
@@ -86,7 +92,12 @@ def writeJSON(result, path_to_save=None, indent=4,encoding = "utf-8", mode="w+")
         print("JSON saving path not found! Skipping...")
         return 1
     files = codecs.open(path_to_save,encoding=encoding,mode=mode)
-    files.write(json.dumps(result,indent=indent).decode('unicode-escape'))
+    if not python3:
+        files.write(json.dumps(result,indent=indent).decode('unicode-escape'))
+    elif python3:
+        msg = json.dumps(result, indent=indent)
+        msg = bytes(msg, 'utf-8')
+        files.write(msg.decode('unicode-escape'))
     files.flush()
     files.close()
     print("JSON file written to path: {}".format(path_to_save))
@@ -97,8 +108,8 @@ if __name__=="__main__":
         args = [sys.argv[1],sys.argv[2]]
     else:
         args = []
-        args.append(raw_input("Path to Exported Bookmark: "))
-        args.append(raw_input("Export JSON to: "))
+        args.append(input("Path to Exported Bookmark: "))
+        args.append(input("Export JSON to: "))
     try:
         result = parseHTML(args[0])
         writeJSON(result, args[1])
