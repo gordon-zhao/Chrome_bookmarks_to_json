@@ -10,17 +10,20 @@ Convert exported chrome bookmarks to JSON
   Because Chrome does not count "Other bookmarks" as a bookmark folder in the exported html file, the folders under "Other bookmarks" will be under "Bookmarks" folder
   
 ## Json Structure:
-  * "Bookmarks":
-      * {
-          * \"Folder A": {
-              * \"Folder A_A":{}, 
-              * \"link":'[[bookmark_name, bookmark_link]]'
-          * }
-          * \"Folder B": {
-              * \"Folder B_A":{}, 
-              * \"link":'[[bookmark_name, bookmark_link]]'
-          * }
-          * "link":[
-              * \[bookmark_name, bookmark_link]
-          * \]
-      * }
+
+```
+  "Bookmarks":
+       {
+          "Folder A": {
+              "Folder A_A":{}, 
+              "link":'[[bookmark_name, bookmark_link]]'
+          }
+          "Folder B": {
+              "Folder B_A":{}, 
+              "link":'[[bookmark_name, bookmark_link]]'
+          }
+          "link":[
+              [bookmark_name, bookmark_link]
+          ]
+      }
+```
