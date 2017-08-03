@@ -12,7 +12,15 @@ Convert exported chrome bookmarks to JSON
 ## Json Structure:
   * "Bookmarks":
       * {
-          * \["Folder A"]: {"Folder A_A":{}, "link":'[[bookmark_name, bookmark_link]]'}
-          * \["Folder B"]: {"Folder B_A":{}, "link":'[[bookmark_name, bookmark_link]]'}
-          * "link":[[bookmark_name, bookmark_link]]
+          * \"Folder A": {
+              * \"Folder A_A":{}, 
+              * \"link":'[[bookmark_name, bookmark_link]]'
+          * }
+          * \"Folder B": {
+              * \"Folder B_A":{}, 
+              * \"link":'[[bookmark_name, bookmark_link]]'
+          * }
+          * "link":[
+              * \[bookmark_name, bookmark_link]
+          * \]
       * }
