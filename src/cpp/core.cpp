@@ -8,114 +8,116 @@ void coreutils::makeJSON() {
 	string buf4Link;
 	string currentLine;
 	string checkAccess = openFile();
+	bool isInFirstLine = 1;
+	int folderLevel = 1;
+	int lastLineStatus = 0;
+
+/*
+	Values for lastLineStatus, USAGE: Mark what type the last line is
+
+		Left Brace  ==> 0;
+		Right Brace ==> 1;
+		Folder Line	==> 2;
+		Content Line ==> 3;
+*/
+
 	
 	if (checkAccess != "Success") printf(checkAccess.c_str());
 	//Check READ/WRITE access END
 	
 //Init Message Start
-	writer << R"("Bookmarks":)" << "\n" << "	{\n";
+	writer << R"("Bookmarks" :)";
 //Init Message End
 
 // Main Content Start
 	while (getline(reader, currentLine)) {
 		
+		if (currentLine.find(R"(<DL><p>)") != string::npos) { //Left Brace (Region Start) Detection
+			
+			writer << " {\n"; //Left Brace
+			isInFirstLine = 1; //Clean up status for next rotation
 
-		bool semicolonStat = 0;
-		bool braceStat     = 0;
-		
-		if (currentLine.find(R"(<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8")") != string::npos
-			|| currentLine.find(R"(<TITLE>)") != string::npos
-			|| currentLine.find(R"(<H1>)") != string::npos
-			|| currentLine.find(R"(<DL><p>)") != string::npos
-			) {
-			continue;
+			lastLineStatus = 0;
+
 		}
 
+	   else if (currentLine.find(R"(</DL><p>)") != string::npos) {	//Right brace (Region End) Detection
 
-		//Folder-enabled Mode Start
-		if (currentLine.find(R"(<DT><H3)") != string::npos) {
+			writer << "\n" <<outputTab(folderLevel)<<"}"; // Right Brace
+			isInFirstLine = 1; //Clean up status for next rotation
+
+			lastLineStatus = 1;
+
+		}
+
+		else if (currentLine.find(R"(<DT><H3)") != string::npos) { //Folder Name Line Detection
 			
+			if (lastLineStatus == 3 || lastLineStatus == 1) {writer << ",";}
 
 			string folderName;
 			folderName = getFolderName(currentLine);
-			writer 
-				<< R"(		")" 
-				<< folderName.c_str() 
-				<< R"(" :)" 
-				<< "\n		{\n";
+			writer
+				<< "\n"
+				<< outputTab(folderLevel) << R"(")"
+				<< folderName.c_str()
+				<< R"(" :)";
 
-			
-			while (getline(reader,currentLine)) {
+			lastLineStatus = 2;
 
-				if (currentLine.find(R"(<DT><A HREF=)") != string::npos) {
-					if (semicolonStat == 1) {
-						writer 
-							<< ";" 
-							<< "\n			";
-					}
-					if (semicolonStat == 0) {
-						writer << "\n			";
-						semicolonStat = 1;
-					}
-					buf4BookmarkName = getMarkName(currentLine);
-					buf4Link = getLink(currentLine);
-					writer 
-						<< R"(")" 
-						<< buf4Link 
-						<< R"(" : )" 
-						<< R"(')" 
-						<< buf4BookmarkName 
-						<< R"(')";
-				}
-				if (currentLine.find(R"(</DL><p>)") != string::npos) {
-					writer 
-						<< "\n" 
-						<< "		}" 
-						<< "\n"; 
-					break;
-				}
-			}
 		}
-		//Folder-enabled Mode END
-		
-		braceStat     = 0;
-		semicolonStat = 0;
 
+		else if (currentLine.find(R"(<DT><A HREF=)") != string::npos) { //Content (Bookmark) Line Detection
+			
+			if (lastLineStatus == 1) { writer << ",\n"; }
+			
+			if (isInFirstLine) {
+				writer <<outputTab(folderLevel + 1);
+				isInFirstLine = 0;
+			}
 
-		//Raw Bookmark Mode Start
-		if (currentLine.find(R"(<DT><A HREF=)") != string::npos) {
-				
-			if (semicolonStat == 1) {
-					writer << ";" << "\n";
+			else if (!isInFirstLine) {
+				//system("pause");
+				writer
+					<< ","
+					<< "\n" << outputTab(folderLevel + 1);
 			}
-			if (semicolonStat == 0) {
-				writer << "\n";
-				semicolonStat = 1;
-			}
+
 			buf4BookmarkName = getMarkName(currentLine);
 			buf4Link = getLink(currentLine);
-			writer << R"(		")" << buf4Link << R"(" : )" << R"(')" << buf4BookmarkName << R"(')";
-			
+			writer
+				<< R"(")"
+				<< buf4Link
+				<< R"(" : )"
+				<< R"(')"
+				<< buf4BookmarkName
+				<< R"(')";
+
+			lastLineStatus = 3;
+
 		}
-		//Raw Bookmark Mode END
 	}
 // Main Content END
 
-//End Message Start
-	writer << "\n}\n";
-//End Message END
-	
+
 
 	closeFile(); //Close File read/write session
 
 }
 
-void coreutils::closeFile() {
+inline void coreutils::closeFile() {
 	writer.close();
 	reader.close();
 }
 
-string coreutils::openFile() {
+inline string coreutils::outputTab(int tabCount) {
+	string outputBuffer;
+	for (int i = 0; i < tabCount; i++) {
+		outputBuffer += "	";
+	}
+	return outputBuffer;
+}
+
+inline string coreutils::openFile() {
 	if (inputFile.size() == string::npos)  return generateErrorMessage("No source file specified."); 
 	if (outputFile.size() == string::npos) return generateErrorMessage("No output file specified."); 
 	
@@ -127,13 +129,13 @@ string coreutils::openFile() {
 	return "Success";
 }
 
-string coreutils::generateErrorMessage(string originText) {
+inline string coreutils::generateErrorMessage(string originText) {
 	string returnText = "[ERROR] " + originText + "\n";
 	return returnText;
 }
 
 
-string coreutils::getLink(string originLine) {
+inline string coreutils::getLink(string originLine) {
 	string resultLink;
 	int startPos = originLine.find_first_of("HREF=", 0) +4;
 	int endPos = originLine.find_first_of(" ",startPos);
@@ -151,7 +153,7 @@ string coreutils::getLink(string originLine) {
 };
 
 
-string coreutils::getMarkName(string originLine) {
+inline string coreutils::getMarkName(string originLine) {
 	string resultMarkName;
 	int endPos = originLine.find_last_of(R"(</A>)");
 	int startPos = originLine.find_first_of(R"(>)",(originLine.find_first_of(">")+1));
@@ -161,7 +163,7 @@ string coreutils::getMarkName(string originLine) {
 	return resultMarkName;
 };
 
-string coreutils::getFolderName(string originLine) {
+inline string coreutils::getFolderName(string originLine) {
 	string resultFolderName;
 	int endPos = originLine.find_last_of(R"(</H3>)");
 	int startPos = originLine.find_first_of(R"(>)", (originLine.find_first_of(">") + 1));

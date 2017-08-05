@@ -10,13 +10,14 @@ class coreutils {
 public:
 	string inputFile;
 	string outputFile;
-	string openFile();
+	inline string openFile();
 	void makeJSON();
-	string generateErrorMessage(string originText);
-	string getLink(string originLine);
-	string getMarkName(string originLine);
-	string getFolderName(string originLine);
+	inline string generateErrorMessage(string originText);
+	inline string getLink(string originLine);
+	inline string getMarkName(string originLine);
+	inline string getFolderName(string originLine);
 	void closeFile();
+	inline string outputTab(int tabCount);
 private:
 	ifstream reader;
 	ofstream writer;

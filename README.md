@@ -43,8 +43,6 @@ Use it just like a Linux software, call the program with parameters:
 ## Known Issue
   In Python Version, because Chrome does not count "Other bookmarks" as a bookmark folder in the exported html file, the folders under "Other bookmarks" will be under "Bookmarks" folder.
   
-  But this issue could be solved in C++ version. If you need such a feature, just post a issue in this repo so that we can add it.
-  
 ## Json Structure:
 
 ```
